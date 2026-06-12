@@ -1,0 +1,122 @@
+<?php
+
+namespace Ekumanov\EdgeCache;
+
+use Flarum\Http\CookieFactory;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\MiddlewareInterface as Middleware;
+use Psr\Http\Server\RequestHandlerInterface as Handler;
+
+/**
+ * Makes guest page views cookieless so Cloudflare can cache them, and makes
+ * the origin authoritative about what may be cached.
+ *
+ * Cacheable  = credential-less GET/HEAD on an allowlisted path, 200, text/html.
+ *              -> strip ALL Set-Cookie + the X-CSRF-Token header, emit
+ *              Cache-Control: public so the CF cache rule (Edge TTL: respect
+ *              origin) stores it.
+ * Everything else HTML -> explicit Cache-Control: private, no-store, so a
+ *              mis-scoped CF rule can never cache a personalised response.
+ *
+ * INVARIANTS (do not break):
+ * - The path allowlist below and the CF cache-rule expression move in
+ *   lockstep, in the same deploy.
+ * - API responses keep their Set-Cookie (guest-heartbeat dedupe and the JS
+ *   CSRF-retry shim both depend on it) — this middleware is forum-only.
+ * - /reset, /confirm etc. are server-rendered Blade forms that need their
+ *   session cookie; they stay denylisted forever.
+ */
+class EdgeCacheMiddleware implements Middleware
+{
+    /**
+     * v1 scope: discussion pages only — the GSC-flagged URL group.
+     */
+    private const ALLOWED_PATH_PREFIXES = ['/d/'];
+
+    private const DENIED_PATH_PREFIXES = [
+        '/reset', '/confirm', '/logout', '/unsubscribe', '/auth', '/api', '/admin',
+    ];
+
+    /**
+     * Edge TTL via s-maxage. max-age=0 keeps browsers from caching.
+     */
+    private const EDGE_TTL = 300;
+
+    public function __construct(
+        protected CookieFactory $cookie
+    ) {
+    }
+
+    public function process(Request $request, Handler $handler): Response
+    {
+        $started = microtime(true);
+        $cacheable = $this->isCacheableRequest($request);
+
+        $response = $handler->handle($request);
+
+        $isHtml = str_starts_with($response->getHeaderLine('Content-Type'), 'text/html');
+
+        if ($cacheable && $response->getStatusCode() === 200 && $isHtml) {
+            return $response
+                ->withoutHeader('Set-Cookie')
+                ->withoutHeader('X-CSRF-Token')
+                ->withHeader('Cache-Control', 'public, s-maxage='.self::EDGE_TTL.', max-age=0, must-revalidate')
+                ->withHeader('Server-Timing', sprintf('origin;dur=%.0f', (microtime(true) - $started) * 1000));
+        }
+
+        // Everything that isn't the cacheable case above gets an explicit
+        // private CC (HTML, JSON-API errors, redirects alike) so a mis-scoped
+        // CF rule with "respect origin" can never default-cache it.
+        if (! $response->hasHeader('Cache-Control')) {
+            $response = $response->withHeader('Cache-Control', 'private, no-store');
+        }
+
+        return $response;
+    }
+
+    private function isCacheableRequest(Request $request): bool
+    {
+        if (! in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
+            return false;
+        }
+
+        $cookies = $request->getCookieParams();
+
+        if (isset($cookies[$this->cookie->getName('session')])
+            || isset($cookies[$this->cookie->getName('remember')])
+            || $request->getHeaderLine('Authorization') !== '') {
+            return false;
+        }
+
+        $path = $this->forumRelativePath($request->getUri()->getPath());
+
+        foreach (self::DENIED_PATH_PREFIXES as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return false;
+            }
+        }
+
+        foreach (self::ALLOWED_PATH_PREFIXES as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Depending on where the BasePath middleware sits relative to the forum
+     * pipe, the URI path may or may not still carry the /forum mount prefix.
+     * Normalize to the forum-relative form.
+     */
+    private function forumRelativePath(string $path): string
+    {
+        if ($path === '/forum' || str_starts_with($path, '/forum/')) {
+            return substr($path, strlen('/forum')) ?: '/';
+        }
+
+        return $path;
+    }
+}
