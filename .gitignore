@@ -1,0 +1,7 @@
+vendor/
+js/node_modules/
+.DS_Store
+docs/discuss-posts/
+
+# local prod-ops files (deploy runbook + monitoring helpers) — not distributed
+deploy/
