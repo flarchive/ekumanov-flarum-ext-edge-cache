@@ -1,0 +1,39 @@
+{
+    "name": "ekumanov/flarum-ext-edge-cache",
+    "description": "Cookieless guest page views + CSRF retry shim, enabling safe Cloudflare edge caching of guest HTML.",
+    "keywords": [
+        "flarum",
+        "extension",
+        "cache",
+        "cloudflare",
+        "performance"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "require": {
+        "flarum/core": "^2.0.0",
+        "php": "^8.2"
+    },
+    "authors": [
+        {
+            "name": "ekumanov",
+            "email": "ekumanov@users.noreply.github.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Ekumanov\\EdgeCache\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Edge Cache (guest pages)",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-bolt",
+                "backgroundColor": "#F38020",
+                "color": "#fff"
+            }
+        }
+    }
+}
