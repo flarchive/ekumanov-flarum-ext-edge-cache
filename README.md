@@ -2,13 +2,20 @@
 
 > **Read-only archive of released versions of ekumanov/flarum-ext-edge-cache.** Not for installation: use [Packagist](https://packagist.org/packages/ekumanov/flarum-ext-edge-cache) or the [upstream repository](https://github.com/ekumanov/flarum-ext-edge-cache).
 
-**0** versions archived · Latest: [`v0.5.2`](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.5.2) · License: `MIT` · Flarum: `^2.0`
+**8** versions archived · Latest: [`v0.5.2`](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.5.2) · License: `MIT` · Flarum: `^2.0`
 
 ## Archived Versions
 
 | Version | Released | Flarum | Source |
 |---|---|---|---|
-| — | — | — | — |
+| `v0.1.1` | 2026-06-12 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.1.1) |
+| `v0.2.0` | 2026-06-27 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.2.0) |
+| `v0.2.1` | 2026-07-02 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.2.1) |
+| `v0.3.0` | 2026-07-03 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.3.0) |
+| `v0.4.0` | 2026-07-04 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.4.0) |
+| `v0.5.0` | 2026-07-16 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.5.0) |
+| `v0.5.1` | 2026-09-24 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.5.1) |
+| `v0.5.2` | 2026-10-09 | `^2.0` | [Browse](https://github.com/flarchive/ekumanov-flarum-ext-edge-cache/tree/archive/v0.5.2) |
 
 Catalog entry: [packages/ekumanov-flarum-ext-edge-cache.json](https://github.com/flarchive/archive-index/blob/main/packages/ekumanov-flarum-ext-edge-cache.json)
 
